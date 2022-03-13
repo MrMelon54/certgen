@@ -8,20 +8,16 @@ import (
 	"crypto/x509/pkix"
 	"log"
 	"math/big"
+	"net"
 	"time"
 )
 
-func MakeServerTls(ca *CertGen) (*CertGen, error) {
+func MakeServerTls(ca *CertGen, name pkix.Name, serialNumber *big.Int, dnsNames []string, ipAddresses []net.IP) (*CertGen, error) {
 	cert := &x509.Certificate{
-		SerialNumber: big.NewInt(29052019),
-		Subject: pkix.Name{
-			Organization: []string{"Ski Creds Server"},
-			Country:      []string{"GB"},
-			Province:     []string{""},
-			Locality:     []string{"London"},
-			CommonName:   "ski-creds-server",
-		},
-		DNSNames:     []string{"panda.local"},
+		SerialNumber: serialNumber,
+		Subject:      name,
+		DNSNames:     dnsNames,
+		IPAddresses:  ipAddresses,
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},

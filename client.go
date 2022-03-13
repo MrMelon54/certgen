@@ -11,16 +11,10 @@ import (
 	"time"
 )
 
-func MakeClientTls() (*CertGen, error) {
+func MakeClientTls(name pkix.Name, serialNumber *big.Int) (*CertGen, error) {
 	cert := &x509.Certificate{
-		SerialNumber: big.NewInt(29052019),
-		Subject: pkix.Name{
-			Organization: []string{"Ski Creds Client"},
-			Country:      []string{"GB"},
-			Province:     []string{""},
-			Locality:     []string{"London"},
-			CommonName:   "ski-creds-client",
-		},
+		SerialNumber: serialNumber,
+		Subject:      name,
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},

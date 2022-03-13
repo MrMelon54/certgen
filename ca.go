@@ -11,16 +11,10 @@ import (
 	"time"
 )
 
-func MakeCaTls() (*CertGen, error) {
+func MakeCaTls(name pkix.Name, serialNumber *big.Int) (*CertGen, error) {
 	ca := &x509.Certificate{
-		SerialNumber: big.NewInt(29052019),
-		Subject: pkix.Name{
-			Organization: []string{"Ski Creds CA"},
-			Country:      []string{"GB"},
-			Province:     []string{""},
-			Locality:     []string{"London"},
-			CommonName:   "ski-creds-ca",
-		},
+		SerialNumber:          serialNumber,
+		Subject:               name,
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
 		IsCA:                  true,
