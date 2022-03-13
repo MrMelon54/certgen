@@ -30,6 +30,9 @@ func MakeServerTls(ca *CertGen, name pkix.Name, serialNumber *big.Int, dnsNames 
 		log.Fatalln("Failed to generate server private key:", err)
 	}
 
+	if ca == nil {
+		ca = &CertGen{cert: cert, key: serverPrivKey}
+	}
 	serverBytes, err := x509.CreateCertificate(rand.Reader, cert, ca.cert, serverPrivKey.Public(), ca.key)
 	if err != nil {
 		log.Fatalln("Failed to generate server certificate bytes:", err)

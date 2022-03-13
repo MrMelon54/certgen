@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func MakeClientTls(name pkix.Name, serialNumber *big.Int) (*CertGen, error) {
+func MakeClientTls(ca *CertGen, name pkix.Name, serialNumber *big.Int) (*CertGen, error) {
 	cert := &x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject:      name,
@@ -27,7 +27,10 @@ func MakeClientTls(name pkix.Name, serialNumber *big.Int) (*CertGen, error) {
 		log.Fatalln("Failed to generate client private key:", err)
 	}
 
-	clientBytes, err := x509.CreateCertificate(rand.Reader, cert, cert, clientPrivKey.Public(), clientPrivKey)
+	if ca == nil {
+		ca = &CertGen{cert: cert, key: clientPrivKey}
+	}
+	clientBytes, err := x509.CreateCertificate(rand.Reader, cert, ca.cert, clientPrivKey.Public(), ca.key)
 	if err != nil {
 		log.Fatalln("Failed to generate client certificate bytes:", err)
 	}
