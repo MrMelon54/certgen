@@ -17,9 +17,10 @@ type CertGen struct {
 	certPem, keyPem     []byte
 }
 
-func (ca *CertGen) GetTlsLeaf() tls.Certificate {
-	return ca.tlsCert
-}
+func (ca *CertGen) GetTlsLeaf() tls.Certificate { return ca.tlsCert }
+
+func (ca *CertGen) GetCertPem() []byte { return ca.certPem }
+func (ca *CertGen) GetKeyPem() []byte  { return ca.keyPem }
 
 func (ca *CertGen) generatePem() error {
 	a := new(bytes.Buffer)
@@ -58,11 +59,16 @@ func LoadCertGen(certBytes, keyBytes []byte) (*CertGen, error) {
 		return nil, err
 	}
 	leaf := TlsLeaf(&pair)
-	return &CertGen{
+	gen := &CertGen{
 		tlsCert:   pair,
 		cert:      leaf,
 		key:       pair.PrivateKey,
 		certBytes: certBytes,
 		keyBytes:  keyBytes,
-	}, nil
+	}
+	err = gen.generatePem()
+	if err != nil {
+		return nil, err
+	}
+	return gen, nil
 }
