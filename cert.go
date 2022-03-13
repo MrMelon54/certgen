@@ -59,12 +59,14 @@ func LoadCertGen(certBytes, keyBytes []byte) (*CertGen, error) {
 		return nil, err
 	}
 	leaf := TlsLeaf(&pair)
+	certBlock, _ := pem.Decode(certBytes)
+	keyBlock, _ := pem.Decode(keyBytes)
 	gen := &CertGen{
 		tlsCert:   pair,
 		cert:      leaf,
 		key:       pair.PrivateKey,
-		certBytes: certBytes,
-		keyBytes:  keyBytes,
+		certBytes: certBlock.Bytes,
+		keyBytes:  keyBlock.Bytes,
 	}
 	err = gen.generatePem()
 	if err != nil {
