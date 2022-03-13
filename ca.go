@@ -15,11 +15,11 @@ func MakeCaTls() (*CertGen, error) {
 	ca := &x509.Certificate{
 		SerialNumber: big.NewInt(29052019),
 		Subject: pkix.Name{
-			Organization: []string{"Ski Creds Server"},
+			Organization: []string{"Ski Creds CA"},
 			Country:      []string{"GB"},
 			Province:     []string{""},
 			Locality:     []string{"London"},
-			CommonName:   "ski-creds-server",
+			CommonName:   "ski-creds-ca",
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),

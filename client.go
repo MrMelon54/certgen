@@ -11,17 +11,16 @@ import (
 	"time"
 )
 
-func MakeServerTls(ca *CertGen) (*CertGen, error) {
+func MakeClientTls() (*CertGen, error) {
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(29052019),
 		Subject: pkix.Name{
-			Organization: []string{"Ski Creds Server"},
+			Organization: []string{"Ski Creds Client"},
 			Country:      []string{"GB"},
 			Province:     []string{""},
 			Locality:     []string{"London"},
-			CommonName:   "ski-creds-server",
+			CommonName:   "ski-creds-client",
 		},
-		DNSNames:     []string{"panda.local"},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},
@@ -29,24 +28,24 @@ func MakeServerTls(ca *CertGen) (*CertGen, error) {
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
 
-	serverPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	clientPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		log.Fatalln("Failed to generate server private key:", err)
+		log.Fatalln("Failed to generate client private key:", err)
 	}
 
-	serverBytes, err := x509.CreateCertificate(rand.Reader, cert, ca.cert, serverPrivKey.Public(), ca.key)
+	clientBytes, err := x509.CreateCertificate(rand.Reader, cert, cert, clientPrivKey.Public(), clientPrivKey)
 	if err != nil {
-		log.Fatalln("Failed to generate server certificate bytes:", err)
+		log.Fatalln("Failed to generate client certificate bytes:", err)
 	}
-	privKeyBytes := x509.MarshalPKCS1PrivateKey(serverPrivKey)
-	gen := &CertGen{cert: cert, certBytes: serverBytes, key: serverPrivKey, keyBytes: privKeyBytes}
+	privKeyBytes := x509.MarshalPKCS1PrivateKey(clientPrivKey)
+	gen := &CertGen{cert: cert, certBytes: clientBytes, key: clientPrivKey, keyBytes: privKeyBytes}
 	err = gen.generatePem()
 	if err != nil {
 		return nil, err
 	}
 	caKeyPair, err := tls.X509KeyPair(gen.certPem, gen.keyPem)
 	if err != nil {
-		log.Fatalln("Failed to generate server key pair:", err)
+		log.Fatalln("Failed to generate client key pair:", err)
 	}
 	gen.tlsCert = caKeyPair
 	return gen, nil
