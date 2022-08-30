@@ -1,3 +1,3 @@
-module code.mrmelon54.xyz/sean/certgen
+module code.mrmelon54.com/melon/certgen
 
-go 1.17
+go 1.18
