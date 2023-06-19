@@ -1,4 +1,4 @@
-certgen
+CertGen
 =======
 
 Some certificate generation utilities

@@ -6,42 +6,57 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"log"
+	"fmt"
 	"math/big"
 	"time"
 )
 
-func MakeCaTls(name pkix.Name, serialNumber *big.Int) (*CertGen, error) {
+// MakeCaTls generates a CA TLS certificate
+func MakeCaTls(bits int, name pkix.Name, serialNumber *big.Int, future Future) (*CertGen, error) {
+	// base certificate data
+	now := time.Now()
 	ca := &x509.Certificate{
 		SerialNumber:          serialNumber,
 		Subject:               name,
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(10, 0, 0),
+		NotBefore:             now,
+		NotAfter:              future(now),
 		IsCA:                  true,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		BasicConstraintsValid: true,
 	}
 
-	caPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	// generate rsa private key
+	caPrivKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
-		log.Fatalln("Failed to generate CA private key:", err)
+		return nil, fmt.Errorf("Failed to generate CA private key: %w", err)
 	}
 
+	// create certificate bytes
 	caBytes, err := x509.CreateCertificate(rand.Reader, ca, ca, caPrivKey.Public(), caPrivKey)
 	if err != nil {
-		log.Fatalln("Failed to generate CA certificate bytes:", err)
+		return nil, fmt.Errorf("Failed to generate CA certificate bytes: %w", err)
 	}
+
+	// add the raw certificate bytes so `*x509.Certificate.Equal(*x509.Certificate)` is valid
+	ca.Raw = caBytes
+
+	// get private key bytes
 	privKeyBytes := x509.MarshalPKCS1PrivateKey(caPrivKey)
 	gen := &CertGen{cert: ca, certBytes: caBytes, key: caPrivKey, keyBytes: privKeyBytes}
+
+	// generate pem blocks
 	err = gen.generatePem()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to generate PEM encoding: %w", err)
 	}
+
+	// generate key pair
 	caKeyPair, err := tls.X509KeyPair(gen.certPem, gen.keyPem)
 	if err != nil {
-		log.Fatalln("Failed to generate CA key pair:", err)
+		return nil, fmt.Errorf("Failed to generate CA key pair: %w", err)
 	}
+
 	gen.tlsCert = caKeyPair
 	return gen, nil
 }
