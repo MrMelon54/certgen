@@ -1,4 +1,4 @@
-module github.com/MrMelon54/certgen
+module github.com/mrmelon54/certgen
 
 go 1.18
 
