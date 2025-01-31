@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
+	"time"
 )
 
 func TestMakeCaTls(t *testing.T) {
@@ -14,7 +15,9 @@ func TestMakeCaTls(t *testing.T) {
 		OrganizationalUnit: []string{"test"},
 		SerialNumber:       "1",
 		CommonName:         "certgen.test",
-	}, big.NewInt(1))
+	}, big.NewInt(1), func(now time.Time) time.Time {
+		return now.Add(5 * time.Second)
+	})
 	assert.NoError(t, err)
 	assert.Equal(t, "certgen.test", ca.cert.Subject.CommonName)
 }
